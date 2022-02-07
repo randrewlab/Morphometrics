@@ -7,10 +7,10 @@ output:
   html_document: default
 ---
 ```{r}
-install.packages("knitr")
-install.packages("vegan")
-install.packages("ggplot2")
-install.packages("tidyverse")
+# install.packages("knitr")
+# install.packages("vegan")
+# install.packages("ggplot2")
+# install.packages("tidyverse")
 ```
 *Objective:* To subset morphological data by including or excluding samples based on filters (e.g. list of characters, groupings, etc.)
 
@@ -18,6 +18,9 @@ install.packages("tidyverse")
 
 ```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+# check and set WD for markdwon file, tools>Global options>Rmarkdown>Evaluate chunks in directory(project)
+getwd()
+
 library(cluster) #for hierarchical clustering
 library(vegan) # NMDS and other statistics
 library(ggplot2)
@@ -27,7 +30,7 @@ Define names for input files and directories
 "indir" is the directory containing the input files
 ```{r filenames and directories}
 
-indir <- "../data"
+indir <- "data"
 rawdata <- "rawdata.csv"
 rawdatafile <- file.path(indir,rawdata)
 column_metadata <- "column_metadata.csv"
@@ -48,14 +51,17 @@ The selection of characters for downstream analyses is based on the filtering of
 Characters are included in a group if marked with a yes (`Y`). Then these characters are pulled in the rawdata file based on the list of selected characters in the `data/column_metadata.csv`.
 
 ```{r read rawdata}
-dataset0<-read_csv(rawdatafile) %>%
-  glimpse()
-col_meta<-read_csv(column_metadatafile) %>%
-  glimpse() #List column names to select character for downstream analysis
+dataset0<-read_csv(rawdatafile)
+# %>%
+  # glimpse()
+col_meta<-read_csv(column_metadatafile) 
+# %>%
+  # glimpse() #List column names to select character for downstream analysis
             #"group" names correspond to the set of characters selected for a specific analysis
             #(e.g. "group1" can correspond to NMDS analysis)
-row_meta<-read_csv(row_metadatafile) %>%
-  glimpse()
+ row_meta<-read_csv(row_metadatafile) 
+# %>%
+  # glimpse()
 ```
 
 # Check integrity of rawdata headings with column metadata values
@@ -82,8 +88,9 @@ Decides which columns (characters) to use
 ```{r}
 include_columns<-filter(col_meta,Group1=="y")
 include_columns$character
-dataset_columns <- select(dataset0,include_columns$character ) %>%
-  glimpse()
+dataset_columns <- select(dataset0,include_columns$character )
+# %>%
+  # glimpse()
 ```
 
 ## Filtering the rows of data for specific OTUs (select which samples to use)
@@ -95,7 +102,10 @@ Use semi_join to keep all rows in dataset0 that match include_rows based in valu
 
 ```{r Filter_rows}
 include_rows<-filter(row_meta,Islagroup=="Y")
-datasetisla<- dataset0 %>% semi_join(include_rows, by = "Collection number")
+dataset1<- dataset0 %>% semi_join(include_rows, by = "Collection number")
+subsetname <- "isla"
+save(dataset1,file=file.path("temp",paste0("dataset_",subsetname,".rda")))
+# save(dataset1,file=file.path("../temp",paste0("dataset_",subsetname,".rda")))
 ```
 
 

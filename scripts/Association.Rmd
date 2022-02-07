@@ -9,6 +9,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+subsetname <- 'isla'
+load(file=file.path("temp",paste0("dataset_",subsetname,".rda")),verbose = TRUE)
 ```
 
 ## R Markdown
