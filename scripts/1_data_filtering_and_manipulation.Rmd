@@ -1,0 +1,120 @@
+---
+title: "Data filtering and manipulation"
+author: "Shelley, Sangay and AC"
+date: "02/02/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r}
+install.packages("knitr")
+install.packages("vegan")
+install.packages("ggplot2")
+install.packages("tidyverse")
+```
+*Objective:* To subset morphological data by including or excluding samples based on filters (e.g. list of characters, groupings, etc.)
+
+*Description of script:* This is a two-step filtering processes for the downstream analysis with filtering process (1) based on the characters used and (2) based on the samples to include.
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(cluster) #for hierarchical clustering
+library(vegan) # NMDS and other statistics
+library(ggplot2)
+library(tidyverse)
+```
+Define names for input files and directories
+"indir" is the directory containing the input files
+```{r filenames and directories}
+
+indir <- "../data"
+rawdata <- "rawdata.csv"
+rawdatafile <- file.path(indir,rawdata)
+column_metadata <- "column_metadata.csv"
+column_metadatafile <- file.path(indir,column_metadata)
+row_metadata <- "row_metadata.csv"
+row_metadatafile <- file.path(indir,row_metadata)
+```
+
+
+## Documentation of data filtering and manipulation for morphological analysis
+
+The analysis is based on three data files:
+  `data/rawdata.csv`
+  `data/column_metadata.csv`
+  `data/row_metadata.csv`
+
+The selection of characters for downstream analyses is based on the filtering of groups in the `data/column_metadata.csv` file.
+Characters are included in a group if marked with a yes (`Y`). Then these characters are pulled in the rawdata file based on the list of selected characters in the `data/column_metadata.csv`.
+
+```{r read rawdata}
+dataset0<-read_csv(rawdatafile) %>%
+  glimpse()
+col_meta<-read_csv(column_metadatafile) %>%
+  glimpse() #List column names to select character for downstream analysis
+            #"group" names correspond to the set of characters selected for a specific analysis
+            #(e.g. "group1" can correspond to NMDS analysis)
+row_meta<-read_csv(row_metadatafile) %>%
+  glimpse()
+```
+
+# Check integrity of rawdata headings with column metadata values
+Output is two lists; 
+1. values which are in metadata but not in rawdata
+2. values which are in rawdata but not in metadata
+
+If no values are returned, lists match perfectly.
+
+```{r}
+
+## Characters in metadata without matches in dataset
+col_meta$character[!col_meta$character %in% names(dataset0)]
+
+## Characters in dataset without matches in metadata
+names(dataset0)[!names(dataset0) %in% col_meta$character]
+```
+
+
+
+# Filtering of variables (characters) to use in analysis based on the column_metadata file:
+Decides which columns (characters) to use 
+
+```{r}
+include_columns<-filter(col_meta,Group1=="y")
+include_columns$character
+dataset_columns <- select(dataset0,include_columns$character ) %>%
+  glimpse()
+```
+
+## Filtering the rows of data for specific OTUs (select which samples to use)
+
+This is from the row_metadata file.
+Dataset Isla is filtering from the isla group column of the row_metadata file.
+Additional columns can be added to the row_metadata file to create new groups in a similar way.
+Use semi_join to keep all rows in dataset0 that match include_rows based in value of Collection number
+
+```{r Filter_rows}
+include_rows<-filter(row_meta,Islagroup=="Y")
+datasetisla<- dataset0 %>% semi_join(include_rows, by = "Collection number")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
