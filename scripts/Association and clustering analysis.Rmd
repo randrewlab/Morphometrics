@@ -31,9 +31,20 @@ package.check <- lapply(
 
 
 ```{r Create an association matrix}
-str(dataset)
+str(dataset1)
+
 #daisy treats factors as nominal
-dist <- daisy(datasetisla, metric = "gower", type = list(symm = c(14,19))) #generates the distance matrix
+#This version is specific to Helens data, what we need is to edit it to bring info about column types in the metadata into this script
+#dist <- daisy(dataset1, metric = "gower", type = list(symm = c(14,19))) #generates the distance matrix
+
+
+ dist <- dataset1[,-1] %>% mutate_if(is.character, as.factor) %>% #This line changes all character vectors to factors.
+    daisy( metric = "gower") #generates the distance matrix
+
+ str(dist)
+ #, type= list(symm= asym.cols) Added for binary variables
+ 
+ 
 colnames(datasetisla
          )
 ```
