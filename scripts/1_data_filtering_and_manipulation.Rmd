@@ -18,6 +18,7 @@ output:
 
 ```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "..")
 # check and set WD for markdwon file, tools>Global options>Rmarkdown>Evaluate chunks in directory(project)
 getwd()
 
@@ -25,6 +26,7 @@ library(cluster) #for hierarchical clustering
 library(vegan) # NMDS and other statistics
 library(ggplot2)
 library(tidyverse)
+library(GGally)
 ```
 Define names for input files and directories
 "indir" is the directory containing the input files
@@ -84,7 +86,7 @@ names(dataset0)[!names(dataset0) %in% col_meta$character]
 
 
 # Filtering of variables (characters) to use in analysis based on the column_metadata file:
-Decides which columns (characters) to use 
+Decides which columns (characters) to use,  
 
 ```{r}
 include_strings=c("1","y","Y","yes","Yes")
@@ -120,7 +122,7 @@ dataset1 <- dataset0 %>%
   select(all_of(c(id_col,include_columns$character))) %>% 
   semi_join(include_rows, by = id_col)
 
-
+ggpairs(dataset1[,-1])
 
 # dataset1<- dataset0 %>% semi_join(include_rows, by = id_col)
 save(dataset1,file=file.path("temp",paste0("dataset_",subsetname,".rda")))
