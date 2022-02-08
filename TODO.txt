@@ -1,0 +1,2 @@
+- Figure out how to set working directory to project root in markdown files.
+- Set variable types in column metadata so that type can be specified in daisy
