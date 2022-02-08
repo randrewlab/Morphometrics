@@ -32,10 +32,14 @@ Define names for input files and directories
 
 indir <- "data"
 rawdata <- "rawdata.csv"
-rawdatafile <- file.path(indir,rawdata)
 column_metadata <- "column_metadata.csv"
-column_metadatafile <- file.path(indir,column_metadata)
 row_metadata <- "row_metadata.csv"
+subset_suffix = "group"
+id_col="Collection number"
+
+
+rawdatafile <- file.path(indir,rawdata)
+column_metadatafile <- file.path(indir,column_metadata)
 row_metadatafile <- file.path(indir,row_metadata)
 ```
 
@@ -50,16 +54,13 @@ The analysis is based on three data files:
 The selection of characters for downstream analyses is based on the filtering of groups in the `data/column_metadata.csv` file.
 Characters are included in a group if marked with a yes (`Y`). Then these characters are pulled in the rawdata file based on the list of selected characters in the `data/column_metadata.csv`.
 
-```{r read rawdata}
-dataset0<-read_csv(rawdatafile)
-# %>%
-  # glimpse()
-col_meta<-read_csv(column_metadatafile) 
-# %>%
-  # glimpse() #List column names to select character for downstream analysis
+```{r read rawdata, include=FALSE}
+dataset0<-read_csv(rawdatafile) #%>%  glimpse()
+col_meta<-read_csv(column_metadatafile) #%>% glimpse() 
+#List column names to select character for downstream analysis
             #"group" names correspond to the set of characters selected for a specific analysis
             #(e.g. "group1" can correspond to NMDS analysis)
- row_meta<-read_csv(row_metadatafile) 
+row_meta<-read_csv(row_metadatafile) 
 # %>%
   # glimpse()
 ```
@@ -86,9 +87,18 @@ names(dataset0)[!names(dataset0) %in% col_meta$character]
 Decides which columns (characters) to use 
 
 ```{r}
-include_columns<-filter(col_meta,Group1=="y")
-include_columns$character
-dataset_columns <- select(dataset0,include_columns$character )
+include_strings=c("1","y","Y","yes","Yes")
+subsetname <- "other"
+subsetcol=paste0(subsetname,"_",subset_suffix)
+# include_columns = col_meta$character[unlist(col_meta[,subsetcol]) %in% include_strings]
+# coltoinclude<-"isla_group"
+include_columns<-filter(col_meta,.data[[subsetcol]]=="y")
+
+# dataset_columns <- select(dataset0,all_of(include_columns))
+
+# include_columns<-filter(col_meta,Group1=="y")
+# include_columns$character
+# dataset_columns <- select(dataset0,include_columns$character )
 # %>%
   # glimpse()
 ```
@@ -101,9 +111,18 @@ Additional columns can be added to the row_metadata file to create new groups in
 Use semi_join to keep all rows in dataset0 that match include_rows based in value of Collection number
 
 ```{r Filter_rows}
-include_rows<-filter(row_meta,Islagroup=="Y")
-dataset1<- dataset0 %>% semi_join(include_rows, by = "Collection number")
-subsetname <- "isla"
+
+include_rows<-filter(row_meta,.data[[subsetcol]]=="Y")
+
+
+# include_rows<-filter(row_meta,Islagroup=="Y")
+dataset1 <- dataset0 %>% 
+  select(all_of(c(id_col,include_columns$character))) %>% 
+  semi_join(include_rows, by = id_col)
+
+
+
+# dataset1<- dataset0 %>% semi_join(include_rows, by = id_col)
 save(dataset1,file=file.path("temp",paste0("dataset_",subsetname,".rda")))
 # save(dataset1,file=file.path("../temp",paste0("dataset_",subsetname,".rda")))
 ```
