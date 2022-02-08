@@ -1,6 +1,6 @@
 ---
 title: "association and clsutering analysis"
-author: "Josh"
+author: "Helen"
 date: "08/02/2022"
 output: html_document
 ---
