@@ -1,0 +1,125 @@
+---
+title: "association and clsutering analysis"
+author: "Josh"
+date: "08/02/2022"
+output: html_document
+---
+
+
+*Import filtered data from filtration step into the assiociation analysis, this currently doesn't work, as it needs appropriate filtered data to run in daisy*
+
+##Association analysis
+
+
+###loading packages with fancy function
+```{r}
+## First specify the packages of interest (add extra as needed)
+packages = c("xlsx", "cluster","vegan", "ggplot2", "mclust", "factoextra")
+
+## Now load or install&load all
+package.check <- lapply(
+  packages,
+  FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+      install.packages(x, dependencies = TRUE)
+      library(x, character.only = TRUE)
+    }
+  }
+)
+
+```
+
+
+```{r Create an association matrix}
+str(dataset)
+#daisy treats factors as nominal
+dist <- daisy(datasetisla, metric = "gower", type = list(symm = c(14,19))) #generates the distance matrix
+colnames(datasetisla
+         )
+```
+
+
+
+#show distance matrix
+
+```{r display the distance matrix}
+clust <- hclust(dist, method = "average") #runs UPGMA cluster analysis
+plot(clust)#plots dendrogram
+
+```
+
+
+```{r clustering analysis}
+nmds <- metaMDS(dist) #run NMDS analysis
+plot(nmds, type = 't') #plots NMDS 1 vs 2
+```
+
+
+
+* **general importance** provides importance metric by comparing nmds to the original dataset
+* `envfit` runs this analysis and provides a table to identify; 
+  * relation of each variable to nmds axis
+  * how important a given variable is 
+  * if the importance of each variable is significantly higher than would be expected by random
+```{r general imporatnce}
+#generate a table of charcter importance
+importance <- envfit(nmds, datasetisla, na.rm = TRUE) 
+
+#i_short <- importance$vectors$arrows:[-c("Petiole..length.max")]
+plot(nmds, type = "t") #plots NMDS 1 vs 2
+plot(importance)
+```
+
+
+
+##Insert explanation here!
+
+```{r}
+clus <- cutree(clust, 4)
+g <- split(names(clus), clus)
+
+p <- ggtree(clust, linetype='dashed')
+clades <- sapply(g, function(n) MRCA(p, n))
+
+p <- groupClade(p, clades, group_name='subtree') + aes(color=subtree)
+
+# d <- data.frame(label = names(clus), 
+#                 cyl = datasetisla[names(clus), "cyl"])
+
+## Dummy grouping 
+d <- data.frame(label = names(clus), 
+                pop = samplemeta$group1[match(names(clus),samplemeta$long.id)])
+
+p %<+% d + 
+  layout_dendrogram() + 
+  geom_tippoint(aes(fill=factor(pop), x=x+.5),
+                size=5, shape=21, color='black') +
+  geom_tiplab(aes(label=pop), size=3, hjust=.5, color='black') +
+  # geom_tiplab(angle=90, hjust=1, offset=-10, show.legend=FALSE) + 
+  scale_color_brewer(palette='Set1', breaks=1:4) +
+  theme_dendrogram(plot.margin=margin(6,6,80,6)) +
+  theme(legend.position=c(.9, .6))
+```
+
+
+
+##Mclust clustering analysis
+```{r}
+isladens <- densityMclust(nmds$points)
+plot(isladens, what= "BIC")   #use the what command to run the plots individually without the number choice coming up each time
+plot(isladens, what = "density", type = "hdr")
+
+
+#cluster analysis- G forces dimensions of choice
+mc <- Mclust(nmds$points, G =4)
+plot(mc, what = "BIC")
+plot(mc, what = "density")
+
+summary(mc)
+plot(mc)
+ 
+```
+
+
+
+
