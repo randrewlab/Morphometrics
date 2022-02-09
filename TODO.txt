@@ -1,2 +1,10 @@
 - Figure out how to set working directory to project root in markdown files.
 - Set variable types in column metadata so that type can be specified in daisy
+- get sensible exploratory plots to look for outliers and correlations
+  - try DataExplorer
+  - create PDF with histograms and density plots for every variable with data
+  - correlation heatmap
+  - some way to produce bivariate plots, but not all pairs...
+  - boxplots and mosaic plots/ barplots for categorical variables
+- setup chunk: restrict to markdown settings, in accordance with markdown conventions
+- check how we can all have our own gitignore
