@@ -27,10 +27,13 @@ library(vegan) # NMDS and other statistics
 library(ggplot2)
 library(tidyverse)
 library(GGally)
+library(naniar)
 ```
 Define names for input files and directories
 "indir" is the directory containing the input files
 ```{r filenames and directories}
+
+setwd("..")
 
 indir <- "data"
 rawdata <- "rawdata.csv"
@@ -57,6 +60,9 @@ The selection of characters for downstream analyses is based on the filtering of
 Characters are included in a group if marked with a yes (`Y`). Then these characters are pulled in the rawdata file based on the list of selected characters in the `data/column_metadata.csv`.
 
 ```{r read rawdata, include=FALSE}
+
+setwd("..")
+
 dataset0<-read_csv(rawdatafile) #%>%  glimpse()
 col_meta<-read_csv(column_metadatafile) #%>% glimpse() 
 #List column names to select character for downstream analysis
@@ -90,7 +96,7 @@ Decides which columns (characters) to use,
 
 ```{r}
 include_strings=c("1","y","Y","yes","Yes")
-subsetname <- "other"
+subsetname <- "isla"
 subsetcol=paste0(subsetname,"_",subset_suffix)
 # include_columns = col_meta$character[unlist(col_meta[,subsetcol]) %in% include_strings]
 # coltoinclude<-"isla_group"
@@ -117,12 +123,56 @@ Use semi_join to keep all rows in dataset0 that match include_rows based in valu
 include_rows<-filter(row_meta,.data[[subsetcol]]=="Y")
 
 
+
 # include_rows<-filter(row_meta,Islagroup=="Y")
 dataset1 <- dataset0 %>% 
   select(all_of(c(id_col,include_columns$character))) %>% 
   semi_join(include_rows, by = id_col)
 
-ggpairs(dataset1[,-1])
+## Code to summarise missing data (not needed currently)
+# missing.values <- dataset1 %>%
+#   gather(key = "key", value = "val") %>%
+#   mutate(isna = is.na(val)) %>%
+#   group_by(key) %>%
+#   mutate(total = n()) %>%
+#   group_by(key, total, isna) %>%
+#   summarise(num.isna = n()) %>%
+#   mutate(pct = num.isna / total * 100) %>%
+#   glimpse()
+
+# max.miss.pct=50
+# which(missing.values$pct>max.miss.pct)
+
+missing.prop=sapply(dataset1,function(x)sum(is.na(x))/length(x))
+
+max.miss.prop=.5
+too.much.missing=which(missing.prop>max.miss.prop)
+
+dataset1=dataset1[,-c(too.much.missing)]
+
+# pdf("results/missing_data.pdf",width=12,height = 12)
+vis_miss(dataset1)
+# dev.of
+
+# ggpairs(dataset1[,-1])
+# 
+# ggpairs(dataset1[,2:11])
+# 
+# 
+# data.numeric.cor <- dataset1 %>% 
+#   select(where(is.double)) %>% 
+#   cor(data.numeric)
+# 
+# library(ggcorrplot)
+# 
+# 
+# library(psych)
+# pairs.panels(dataset1[,2:6], 
+#              method = "pearson", # correlation method
+#              hist.col = "#00AFBB",
+#              density = TRUE,  # show density plots
+#              ellipses = TRUE # show correlation ellipses
+#              )
 
 # dataset1<- dataset0 %>% semi_join(include_rows, by = id_col)
 save(dataset1,file=file.path("temp",paste0("dataset_",subsetname,".rda")))
