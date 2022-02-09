@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+.gitignore
+scratch_code/
+temp/
+results/
