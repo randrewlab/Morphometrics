@@ -158,6 +158,14 @@ plot_histogram(dataset1)
 plot_qq(dataset1)
 ## Plot correlation heatmap - probably needs finessing
 plot_correlation(na.omit(dataset1))
+## Plot all vs the first variable - doesn't seem to like name with spaces
+##  or semicolons
+dataset1_rename=dataset1%>%
+  select(where(is.double))
+names(dataset1_rename)=gsub(" ","_",names(dataset1_rename),fixed = T)
+names(dataset1_rename)=gsub(";","",names(dataset1_rename),fixed = T)
+plot_scatterplot(dataset1_rename,by = names(dataset1_rename[,2]))
+
 
 ## Calculate Pearson correlation coefficients and create heatmap (not using DataExplorer)
 data.numeric.cor <- dataset1 %>%
