@@ -13,19 +13,19 @@ output: html_document
 
 ###loading packages with fancy function
 ```{r}
-## First specify the packages of interest (add extra as needed)
-# packages = c("xlsx", "cluster","vegan", "ggplot2", "mclust", "factoextra")
-# 
-# ## Now load or install&load all
-# package.check <- lapply(
-#   packages,
-#   FUN = function(x) {
-#     if (!require(x, character.only = TRUE)) {
-#       install.packages(x, dependencies = TRUE)
-#       library(x, character.only = TRUE)
-#     }
-#   }
-# )
+# First specify the packages of interest (add extra as needed)
+packages = c("xlsx", "cluster","vegan", "ggplot2", "mclust", "factoextra")
+
+## Now load or install&load all
+package.check <- lapply(
+  packages,
+  FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+      install.packages(x, dependencies = TRUE)
+      library(x, character.only = TRUE)
+    }
+  }
+)
 
 ```
 
@@ -41,14 +41,13 @@ str(dataset1)
  dist <- dataset1[,-1] %>% mutate_if(is.character, as.factor) %>% #This line changes all character vectors to factors.
     daisy( metric = "gower") #generates the distance matrix
  
- dist <- dataset1 %>% mutate_if(is.character, as.factor) %>% #This line changes all character vectors to factors.
-    daisy( metric = "gower") #generates the distance matrix
+ 
 
  str(dist)
  #, type= list(symm= asym.cols) Added for binary variables
  
  
-colnames(datasetisla
+colnames(dataset1
          )
 ```
 
@@ -58,7 +57,7 @@ colnames(datasetisla
 
 ```{r display the distance matrix}
 clust <- hclust(dist, method = "average") #runs UPGMA cluster analysis
-plot(clust)#plots dendrogram
+plot(clust, xlab = dataset1[,1])#plots dendrogram
 
 ```
 
@@ -68,8 +67,6 @@ nmds <- metaMDS(dist) #run NMDS analysis
 plot(nmds, type = 't') #plots NMDS 1 vs 2
 ```
 
-
-
 * **general importance** provides importance metric by comparing nmds to the original dataset
 * `envfit` runs this analysis and provides a table to identify; 
   * relation of each variable to nmds axis
@@ -78,10 +75,15 @@ plot(nmds, type = 't') #plots NMDS 1 vs 2
 ```{r general imporatnce}
 #generate a table of charcter importance
 importance <- envfit(nmds, datasetisla, na.rm = TRUE) 
+importance <- envfit(nmds, dataset1, na.rm = TRUE) 
 
 #i_short <- importance$vectors$arrows:[-c("Petiole..length.max")]
 plot(nmds, type = "t") #plots NMDS 1 vs 2
 plot(importance)
+
+
+
+
 ```
 
 

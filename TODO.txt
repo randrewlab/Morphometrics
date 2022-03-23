@@ -8,3 +8,17 @@
   - boxplots and mosaic plots/ barplots for categorical variables
 - setup chunk: restrict to markdown settings, in accordance with markdown conventions
 - check how we can all have our own gitignore
+
+
+Problems.
+Data filtering and manipulation
+1. What does broad summary in data explorer do?
+2. Pearsons correlation doesnt work. 
+3. what do other stats tell me? in dataexplorer
+
+Association and clustering
+1. How to attribute row names in a tibble or label samples in the phenogram and ordination.
+2. importance won't plot on NMDS- - fixed the error you have to run whole chunk or it wont work. 
+3. Labels on ordination are whack. 
+4. I don't know what Rose was doing in the chunk at line 95- maybe trying to edit the phenogram to look better. 
+5. I dont understand the Mclust analysis at all. 

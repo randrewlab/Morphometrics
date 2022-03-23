@@ -126,18 +126,30 @@ Filter the dataset based on row_metadata file.
 Use semi_join to keep all rows in dataset0 that match "include_rows" based on collection number
 
 ```{r Filter_rows}
+subsetrow=paste0(variableset,"_",subset_suffix)
+include_rows<-filter(row_meta,.data[[subsetrow]]=="y")
+```
 
-include_rows<-filter(row_meta,.data[[subsetcol]]=="y")
+##Combine to filter rawdata
 
+```{r Filter_rawdata}
 # include_rows<-filter(row_meta,Islagroup=="Y")
 dataset1 <- dataset0 %>% 
   select(all_of(c(id_col,include_columns$character))) %>% 
   semi_join(include_rows, by = id_col)
 ```
 
-## Inspect filtered dataset for missing data
+## Inspect filtered dataset for variable type and for missing data
 
-```{r Filter_missing data}
+```{r Filter_missing data and type}
+
+## Check variable types
+str(dataset1)
+
+## Change variable types as needed
+dataset1$`Petiole; length max/width max` <- as.numeric(dataset1$`Petiole; length max/width max`)
+dataset1$`Lamina; margin width (of hyaline section)` <- as.numeric(dataset1$`Lamina; margin width (of hyaline section)`)
+
 ## Calculate proportion of missing data
 missing.prop=sapply(dataset1,function(x)sum(is.na(x))/length(x)) 
 
@@ -149,7 +161,6 @@ if(any(too.much.missing)){
  dataset2=dataset1[,-c(too.much.missing)]
 dataset1 <- dataset2 
 }
-
 
 ## Visualise missing data
 vis_miss(dataset1)
@@ -165,7 +176,7 @@ plot_bar(dataset1[,-1])
 ##  - may not vary much in height with few samples, but pattern of bars
 ##    should allow any worrying distributions to be spotted
 plot_histogram(dataset1)
-## Quantile-quantile plots are  way to visualize the deviation from a specific
+## Quantile-quantile plots are a way to visualize the deviation from a specific
 ##  probability distribution - normal by default
 plot_qq(dataset1)
 ## Plot correlation heatmap - probably needs finessing
@@ -179,14 +190,14 @@ names(dataset1_rename)=gsub(";","",names(dataset1_rename),fixed = T)
 plot_scatterplot(dataset1_rename,by = names(dataset1_rename[,2]))
 ```
 
-## Caclulate correlation coefficient between variables
+## Calculate correlation coefficient between variables
 and..
 
 ```{r Calculate correlation coefficient between variables}
 ## Calculate Pearson correlation coefficients and create heatmap (not using DataExplorer)
 data.numeric.cor <- dataset1 %>%
   select(where(is.double)) %>%
-  cor(data.numeric,use="pairwise.complete.obs") #%>% 
+  cor(data.numeric.cor,use="pairwise.complete.obs") #%>% 
   round(digits = 1)
 
 ggcorrplot(data.numeric.cor,tl.cex = 6)
