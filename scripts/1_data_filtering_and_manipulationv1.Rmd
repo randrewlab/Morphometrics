@@ -57,8 +57,6 @@ rawdatafile <- file.path(indir,rawdata)
 column_metadatafile <- file.path(indir,column_metadata)
 row_metadatafile <- file.path(indir,row_metadata)
 ```
-
-
 ## Documentation of data filtering and manipulation for morphological analysis
 
 The analysis is based on three data files:

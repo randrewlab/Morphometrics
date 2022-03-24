@@ -63,7 +63,7 @@ plot(clust, xlab = dataset1[,1])#plots dendrogram
 
 
 ```{r clustering analysis}
-nmds <- metaMDS(dist) #run NMDS analysis
+nmds <- metaMDS(dist, k = 3) #run NMDS analysis
 plot(nmds, type = 't') #plots NMDS 1 vs 2
 ```
 
@@ -73,10 +73,10 @@ plot(nmds, type = 't') #plots NMDS 1 vs 2
   * how important a given variable is 
   * if the importance of each variable is significantly higher than would be expected by random
 ```{r general imporatnce}
-#generate a table of charcter importance
+#generate a table of character importance
 importance <- envfit(nmds, datasetisla, na.rm = TRUE) 
 importance <- envfit(nmds, dataset1, na.rm = TRUE) 
-
+#This plot doesn't need to be publication quality- unlikely to report on these results- 
 #i_short <- importance$vectors$arrows:[-c("Petiole..length.max")]
 plot(nmds, type = "t") #plots NMDS 1 vs 2
 plot(importance)
