@@ -2,9 +2,6 @@
 title: "Data filtering and manipulation"
 author: "Shelley, Sangay and AC"
 date: "02/02/2022"
-output:
-  pdf_document: default
-  html_document: default
 ---
 ```{r}
 # install.packages("knitr")
@@ -14,10 +11,12 @@ output:
 # install.packages("naniar")
 # install.packages("ggcorrplot")
 # install.packages("DataExplorer")
+#install.packages("corrplot")
 ```
 *Objective:* To subset morphological data by including or excluding samples based on filters (e.g. list of characters, groupings, etc.)
 
 *Description of script:* This is a two-step filtering process for the downstream analysis with filtering process (1) based on the characters used and (2) based on the samples to include.
+*Exploration of data:* Using dataexplorer to examine 
 
 ```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -34,6 +33,8 @@ library(GGally)
 library(naniar)
 library(ggcorrplot)
 library(DataExplorer)
+library(dplyr)
+library(corrplot)
 
 ```
 
@@ -145,11 +146,12 @@ dataset1 <- dataset0 %>%
 str(dataset1)
 
 ## Change variable types as needed
-dataset1$`Petiole; length max/width max` <- as.numeric(dataset1$`Petiole; length max/width max`)
-dataset1$`Lamina; margin width (of hyaline section)` <- as.numeric(dataset1$`Lamina; margin width (of hyaline section)`)
+#dataset1$`Petiole; length max/width max` <- as.numeric(dataset1$`Petiole; length max/width max`)
+#dataset1$`Lamina; margin width (of hyaline section)` <- as.numeric(dataset1$`Lamina; margin width (of hyaline section)`)
 
 ## Calculate proportion of missing data
 missing.prop=sapply(dataset1,function(x)sum(is.na(x))/length(x)) 
+missing.prop
 
 ## Set and apply missing data threshold 
 max.miss.prop=.5
@@ -172,13 +174,19 @@ plot_intro(dataset1)
 plot_bar(dataset1[,-1]) 
 ## Histograms - should show only continuous variables
 ##  - may not vary much in height with few samples, but pattern of bars
-##    should allow any worrying distributions to be spotted
+##    should allow any worrying distributions (non normal, may require transformation, bimodal could be interesting) to be spotted
 plot_histogram(dataset1)
 ## Quantile-quantile plots are a way to visualize the deviation from a specific
 ##  probability distribution - normal by default
 plot_qq(dataset1)
 ## Plot correlation heatmap - probably needs finessing
-plot_correlation(na.omit(dataset1))
+corrM <- plot_correlation(na.omit(dataset1))
+##Generate a dataframe listing the correlation values
+#Remove character values
+dataset2 <- select(dataset1, -collection_number)
+## USe rquery to produce correlation matrix, then extract as a data frame
+rquery.cormat(dataset2)
+corvalues0 = rquery.cormat(dataset2, type="flatten", graph=FALSE)
 ## Plot all vs the first variable - doesn't seem to like name with spaces
 ##  or semicolons
 dataset1_rename=dataset1%>%
@@ -186,6 +194,7 @@ dataset1_rename=dataset1%>%
 names(dataset1_rename)=gsub(" ","_",names(dataset1_rename),fixed = T)
 names(dataset1_rename)=gsub(";","",names(dataset1_rename),fixed = T)
 plot_scatterplot(dataset1_rename,by = names(dataset1_rename[,2]))
+
 ```
 
 ## Calculate correlation coefficient between variables
@@ -195,10 +204,11 @@ and..
 ## Calculate Pearson correlation coefficients and create heatmap (not using DataExplorer)
 data.numeric.cor <- dataset1 %>%
   select(where(is.double)) %>%
-  cor(data.numeric.cor,use="pairwise.complete.obs") #%>% 
+  cor(use="pairwise.complete.obs") %>% 
   round(digits = 1)
 
 ggcorrplot(data.numeric.cor,tl.cex = 6)
+
 
  
 ## Scatterplot matrix in psych package only works for smaller numbers of variables

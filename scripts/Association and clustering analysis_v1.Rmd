@@ -32,6 +32,7 @@ package.check <- lapply(
 
 ```{r Create an association matrix}
 str(dataset1)
+asym.cols = c(dataset1[,22])
 
 #daisy treats factors as nominal
 #This version is specific to Helens data, what we need is to edit it to bring info about column types in the metadata into this script
@@ -39,7 +40,7 @@ str(dataset1)
 
 
  dist <- dataset1[,-1] %>% mutate_if(is.character, as.factor) %>% #This line changes all character vectors to factors.
-    daisy( metric = "gower") #generates the distance matrix
+    daisy( metric = "gower", type = list(symm= 'Calyx; sepal abaxial surface; indumentum')) #generates the distance matrix
  
  
 
@@ -56,15 +57,23 @@ colnames(dataset1
 #show distance matrix
 
 ```{r display the distance matrix}
+# have to use unlist because the vector you made was actually a list-weird?? 
+label1 <- unlist(dataset1[,1])
 clust <- hclust(dist, method = "average") #runs UPGMA cluster analysis
-plot(clust, xlab = dataset1[,1])#plots dendrogram
-
+clust$labels= label1
+plot(clust)#plots dendrogram
+# str(clust)
+ str(label1)
+class(label1)
 ```
 
 
 ```{r clustering analysis}
-nmds <- metaMDS(dist, k = 3) #run NMDS analysis
-plot(nmds, type = 't') #plots NMDS 1 vs 2
+nmds <- metaMDS(dist, k = 2) #run NMDS analysis
+# stressplot(nmds)
+plot(nmds, dis="sites", type="t")
+plot(nmds, dis="sites", type="n")
+orditorp(nmds, "sites", label = label1)
 ```
 
 * **general importance** provides importance metric by comparing nmds to the original dataset
@@ -72,23 +81,25 @@ plot(nmds, type = 't') #plots NMDS 1 vs 2
   * relation of each variable to nmds axis
   * how important a given variable is 
   * if the importance of each variable is significantly higher than would be expected by random
-```{r general imporatnce}
+```{r general importance}
+#Make a list specifying labels for vectors and factors
+vectorlabel1 <- colnames(dataset1)
+vectorlabel <- c(vectorlabel1[-1])
+label2 <- list("vectors" = vectorlabel ,"factors"= label1)
 #generate a table of character importance
-importance <- envfit(nmds, datasetisla, na.rm = TRUE) 
-importance <- envfit(nmds, dataset1, na.rm = TRUE) 
-#This plot doesn't need to be publication quality- unlikely to report on these results- 
-#i_short <- importance$vectors$arrows:[-c("Petiole..length.max")]
-plot(nmds, type = "t") #plots NMDS 1 vs 2
-plot(importance)
+importance <- envfit(nmds, dataset1, na.rm = TRUE)
+plot(nmds, "sites")
+plot(importance, labels = label2)
 
-
+#  str(importance)
+# class(importance$factors)
 
 
 ```
 
 
 
-##Insert explanation here!
+##Making a pretty dendrogram?
 
 ```{r}
 clus <- cutree(clust, 4)

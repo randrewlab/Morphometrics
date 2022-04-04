@@ -32,6 +32,7 @@ Lamina; shape,,
 Lamina; length max,y,y
 Lamina; width max,y,y
 Lamina; length to widest point,y,y
+Lamina; length max/width max,y,y
 Lamina; length min,,
 Lamina; width min,,
 Lamina; transverse posture,,y
