@@ -5,9 +5,6 @@ date: "08/02/2022"
 output: html_document
 ---
 
-
-*Import filtered data from filtration step into the assiociation analysis, this currently doesn't work, as it needs appropriate filtered data to run in daisy*
-
 ##Association analysis
 
 
@@ -32,14 +29,14 @@ package.check <- lapply(
 
 ```{r Create an association matrix}
 str(dataset1)
-asym.cols = c(dataset1[,22])
+# asym.cols = c(dataset1[,26])
 
 #daisy treats factors as nominal
 #This version is specific to Helens data, what we need is to edit it to bring info about column types in the metadata into this script
 #dist <- daisy(dataset1, metric = "gower", type = list(symm = c(14,19))) #generates the distance matrix
 
 
- dist <- dataset1[,-1] %>% mutate_if(is.character, as.factor) %>% #This line changes all character vectors to factors.
+ dist <- dataset1 %>% mutate_if(is.character, as.factor) %>% 
     daisy( metric = "gower", type = list(symm= 'Calyx; sepal abaxial surface; indumentum')) #generates the distance matrix
  
  
@@ -54,11 +51,11 @@ colnames(dataset1
 
 
 
-#show distance matrix
+#Create a hierarchical clustering dendrogram using UPGMA
 
 ```{r display the distance matrix}
 # have to use unlist because the vector you made was actually a list-weird?? 
-label1 <- unlist(dataset1[,1])
+label1 <- unlist(dataset1[,2])
 clust <- hclust(dist, method = "average") #runs UPGMA cluster analysis
 clust$labels= label1
 plot(clust)#plots dendrogram
@@ -69,8 +66,13 @@ class(label1)
 
 
 ```{r clustering analysis}
+#It would be good to make a scree plot (number of dimensions by stress value), to help determine best number of dimensions to use
+#Failing that, just go for the smallest number of dimensions with a stress value between 0.05 and 0.1 if practical, but definitely less than 0.2. 
 nmds <- metaMDS(dist, k = 2) #run NMDS analysis
+# wascores =FALSE, autotransform = FALSE, noshare = FALSE, Trace = TRUE
 # stressplot(nmds)
+# str(nmds)
+nmds$stress
 plot(nmds, dis="sites", type="t")
 plot(nmds, dis="sites", type="n")
 orditorp(nmds, "sites", label = label1)
@@ -82,71 +84,102 @@ orditorp(nmds, "sites", label = label1)
   * how important a given variable is 
   * if the importance of each variable is significantly higher than would be expected by random
 ```{r general importance}
-#Make a list specifying labels for vectors and factors
-vectorlabel1 <- colnames(dataset1)
-vectorlabel <- c(vectorlabel1[-1])
-label2 <- list("vectors" = vectorlabel ,"factors"= label1)
-#generate a table of character importance
+# Make labels for arrows and points (vectors and factors)
+# vectorlabel1 <- colnames(dataset1)
+# vectorlabel <- c(vectorlabel1[-1])
+# label2 <- list("vectors" = vectorlabel,"factors"= label1)
+
+#Generate table of importance values
 importance <- envfit(nmds, dataset1, na.rm = TRUE)
-plot(nmds, "sites")
-plot(importance, labels = label2)
+str(nmds)
+# #plot nmds
+# # plot(nmds, dis="sites", type="n")
+# # importance <- envfit(nmds, dataset1, na.rm = TRUE)
+# plot(nmds, dis="sites", type="t")
+# plot(nmds, dis="sites", type="n")
+# orditorp(nmds, "sites", label = label1)
+# plot(nmds)
+# #plot(importance, labels = label2)
+# 
+# #Create biplot with importance vectors
+# plot(importance, labels = label2)
+
+
+# plot(nmds, dis="sites", type="t")
+# plot(nmds, dis="sites", type="n")
+# orditorp(nmds, "sites", label = label1)
+
+
+# plot(importance, labels = label2)
+# #generate a table of character importance
+# importance <- envfit(nmds, dataset1, na.rm = TRUE)
+# plot(nmds, "sites")
+
 
 #  str(importance)
 # class(importance$factors)
 
 
+
+plot(nmds, dis="sites", type="t")
+plot(nmds, dis="sites", type="n")
+orditorp(nmds, "sites", label = label1)
+plot(importance)
+
 ```
-
-
 
 ##Making a pretty dendrogram?
 
 ```{r}
-clus <- cutree(clust, 4)
-g <- split(names(clus), clus)
-
-p <- ggtree(clust, linetype='dashed')
-clades <- sapply(g, function(n) MRCA(p, n))
-
-p <- groupClade(p, clades, group_name='subtree') + aes(color=subtree)
-
+# clus <- cutree(clust, 4)
+# g <- split(names(clus), clus)
+# 
+# p <- ggtree(clust, linetype='dashed')
+# clades <- sapply(g, function(n) MRCA(p, n))
+# 
+# p <- groupClade(p, clades, group_name='subtree') + aes(color=subtree)
+# 
+# # d <- data.frame(label = names(clus), 
+# #                 cyl = datasetisla[names(clus), "cyl"])
+# 
+# ## Dummy grouping 
 # d <- data.frame(label = names(clus), 
-#                 cyl = datasetisla[names(clus), "cyl"])
-
-## Dummy grouping 
-d <- data.frame(label = names(clus), 
-                pop = samplemeta$group1[match(names(clus),samplemeta$long.id)])
-
-p %<+% d + 
-  layout_dendrogram() + 
-  geom_tippoint(aes(fill=factor(pop), x=x+.5),
-                size=5, shape=21, color='black') +
-  geom_tiplab(aes(label=pop), size=3, hjust=.5, color='black') +
-  # geom_tiplab(angle=90, hjust=1, offset=-10, show.legend=FALSE) + 
-  scale_color_brewer(palette='Set1', breaks=1:4) +
-  theme_dendrogram(plot.margin=margin(6,6,80,6)) +
-  theme(legend.position=c(.9, .6))
+#                 pop = samplemeta$group1[match(names(clus),samplemeta$long.id)])
+# 
+# p %<+% d + 
+#   layout_dendrogram() + 
+#   geom_tippoint(aes(fill=factor(pop), x=x+.5),
+#                 size=5, shape=21, color='black') +
+#   geom_tiplab(aes(label=pop), size=3, hjust=.5, color='black') +
+#   # geom_tiplab(angle=90, hjust=1, offset=-10, show.legend=FALSE) + 
+#   scale_color_brewer(palette='Set1', breaks=1:4) +
+#   theme_dendrogram(plot.margin=margin(6,6,80,6)) +
+#   theme(legend.position=c(.9, .6))
 ```
 
 
 
 ##Mclust clustering analysis
 ```{r}
-isladens <- densityMclust(nmds$points)
+#cluster analysis- G forces dimensions of choice
+#For Mclust to recognise an apriori group, that group must be represented in the NMDS by at least n = k+1 dimensions. So 3 samples inthis case. M. gibberagee only just satisfies this. 
+mc <- Mclust(nmds$points)
+plot(mc, what = "BIC")
+plot(mc, what = "density")
+plot(mc, what = "classification")
+plot(mc, what = "uncertainty")
+
+summary(mc)
+#plot(mc)
+ isladens <- densityMclust(nmds$points)
 plot(isladens, what= "BIC")   #use the what command to run the plots individually without the number choice coming up each time
 plot(isladens, what = "density", type = "hdr")
 
 
-#cluster analysis- G forces dimensions of choice
-mc <- Mclust(nmds$points, G =4)
-plot(mc, what = "BIC")
-plot(mc, what = "density")
 
-summary(mc)
-plot(mc)
- 
 ```
-
+```{r testing character distributions by apriori groups}
+#box and whisker plots. 
 
 
 

@@ -22,12 +22,18 @@ Get pearsons coefficient working
 
 2. importance won't plot on NMDS- - fixed the error you have to run whole chunk or it wont work. 
 3. Labels on ordination are whack. 
-Do I need to graph stress values for k and pick a value?
+Do I need to graph stress values for k and pick a value?- a scree plot of dimensions vs stress would be good but isnt really necessary. 
 4. Does chunk at line 95 edit the phenogram to look better?
 How to plot the stress values and choose the best one, which one is the program displaying?
-5. I dont understand the Mclust analysis at all. 
+
 6. What is the best metric to report in results to show what characters divide species most strongly?
 For example- I would report on the phenetic analysis, ideally with Mclust results, then I could select characters which had the strongest influence on the ordination and plot them as a scatterplot to visualise groupings, then as a box plot(need 6 points to show a half decent spread) to demonstrate alignment with putative species. 
 Any point in reporting both phenogram and ordination?
 7. Where to store label info for publishable figures? And what kind of labels is best? Match colours with DArTseq, colour coded dots with a legend, that just states OTU groups (probably no population info).
 8. Need to decide whether to include ratios or not, and if yes, which of the other measurement to include, probably shouldn't include both?
+
+A few take aways;
+Need to remove overly correlated variables and rerun analyses- results changed?
+Need more characters. 
+Really need a minimum of three samples per OTU for MClust- if not more. 
+Need a few more characters, that are very different

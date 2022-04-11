@@ -101,7 +101,7 @@ names(dataset0)[!names(dataset0) %in% col_meta$character]
 
 ```{r}
 include_strings=c("1","y","Y","yes","Yes")
-variableset <- "isla"
+variableset <- "erubgalam"
 subsetcol=paste0(variableset,"_",variableset_suffix)
 # include_columns = col_meta$character[unlist(col_meta[,subsetcol]) %in% include_strings]
 # coltoinclude<-"isla_group"
@@ -162,8 +162,14 @@ if(any(too.much.missing)){
 dataset1 <- dataset2 
 }
 
+##Need a code to remove samples with too much missing data
+
 ## Visualise missing data
-vis_miss(dataset1)
+ vis_miss(dataset1)
+ plot_missing(dataset1)
+#To remove any row with any amount of missing data
+ dataset1 <- dataset1 %>%
+  na.omit()
 
 ## Exploratory plots using DataExplorer
 ## See vignette for more detailed explanations: 
@@ -184,9 +190,13 @@ corrM <- plot_correlation(na.omit(dataset1))
 ##Generate a dataframe listing the correlation values
 #Remove character values
 dataset2 <- select(dataset1, -collection_number)
+dataset2 <- select(dataset2, -OTU)
+str(dataset2)
 ## USe rquery to produce correlation matrix, then extract as a data frame
+source("http://www.sthda.com/upload/rquery_cormat.r")
 rquery.cormat(dataset2)
 corvalues0 = rquery.cormat(dataset2, type="flatten", graph=FALSE)
+corvalues <- corvalues0$r
 ## Plot all vs the first variable - doesn't seem to like name with spaces
 ##  or semicolons
 dataset1_rename=dataset1%>%
